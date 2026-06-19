@@ -1,0 +1,79 @@
+{
+  "name": "@tentaclepay/sdk",
+  "version": "0.0.1",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/cjs/index.d.ts",
+  "keywords": [
+    "x402",
+    "cross-chain",
+    "payment",
+    "protocol",
+    "sui"
+  ],
+  "homepage": "https://github.com/tentaclepay/ts-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/tentaclepay/ts-sdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tentaclepay/ts-sdk.git"
+  },
+  "license": "MIT",
+  "description": "Tentacle Pay TypeScript SDK",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint-staged": "biome check . --write --staged --files-ignore-unknown=true --no-errors-on-unmatched"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.mts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./x402/evm": {
+      "import": {
+        "types": "./dist/esm/x402/evm/index.d.mts",
+        "default": "./dist/esm/x402/evm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/x402/evm/index.d.ts",
+        "default": "./dist/cjs/x402/evm/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "2.4.15",
+    "@total-typescript/ts-reset": "0.6.1",
+    "@tsconfig/node22": "22.0.5",
+    "@types/node": "25.9.1",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "6.1.1",
+    "vitest": "4.1.7"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.2.0",
+    "@noble/hashes": "^2.2.0",
+    "@x402/evm": "^2.15.0",
+    "viem": "^2.52.2",
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "@ika.xyz/sdk": "^0.4.1",
+    "@mysten/sui": "^2.17.0"
+  }
+}
