@@ -7,7 +7,7 @@ import {
   createUserSignMessageWithPublicOutput,
 } from "@ika.xyz/sdk";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
-import { fromBase64, SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
+import { fromBase64, SUI_CLOCK_OBJECT_ID, toBase64 } from "@mysten/sui/utils";
 import { concat, fromHex, hashTypedData, toHex } from "viem";
 
 import type { Curve, HashScheme, SignatureAlgorithm } from "../../crypto";
@@ -127,8 +127,8 @@ export const createCrossChainEvmSigner = async (
           signerId: TENTACLEPAY_EVM_SIGNER_ID,
           coordinatorId: ikaCoordinator.objectID,
           amount: authorization.value,
-          message: message.toBase64(),
-          messageCentralizedSignature: messageCentralizedSignature.toBase64(),
+          message: toBase64(message),
+          messageCentralizedSignature: toBase64(messageCentralizedSignature),
           validBefore,
         }),
       });
