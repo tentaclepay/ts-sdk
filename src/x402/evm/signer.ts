@@ -2,13 +2,27 @@ import type { IkaClient, SignWithState } from "@ika.xyz/sdk";
 import type { ClientWithCoreApi } from "@mysten/sui/client";
 import type { Keypair } from "@mysten/sui/cryptography";
 import type { ClientEvmSigner } from "@x402/evm";
+import type {
+  HashTypedDataParameters,
+  HashTypedDataReturnType,
+  Hex,
+  TypedData,
+} from "viem";
 import {
   CoordinatorInnerModule,
   createUserSignMessageWithPublicOutput,
 } from "@ika.xyz/sdk";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { fromBase64, SUI_CLOCK_OBJECT_ID, toBase64 } from "@mysten/sui/utils";
-import { concat, fromHex, hashTypedData, toHex } from "viem";
+import {
+  concat,
+  fromHex,
+  getTypesForEIP712Domain,
+  hashDomain,
+  hashStruct,
+  toHex,
+  validateTypedData,
+} from "viem";
 
 import type { Curve, HashScheme, SignatureAlgorithm } from "../../crypto";
 import { PaymentSucceedEvent, Signer } from "../../bcs";
@@ -27,6 +41,57 @@ import {
   parseIkaSignatureAlgorithm,
 } from "../../crypto";
 import { transferWithAuthorizationScheme } from "./eip-3009";
+
+type MessageTypeProperty = {
+  name: string;
+  type: string;
+};
+
+function buildTypedDataPreimage<
+  const typedData extends TypedData | Record<string, unknown>,
+  primaryType extends keyof typedData | "EIP712Domain",
+>(
+  parameters: HashTypedDataParameters<typedData, primaryType>
+): HashTypedDataReturnType {
+  const {
+    domain = {},
+    message,
+    primaryType,
+  } = parameters as HashTypedDataParameters;
+  const types = {
+    EIP712Domain: getTypesForEIP712Domain({ domain }),
+    ...parameters.types,
+  };
+
+  // Need to do a runtime validation check on addresses, byte ranges, integer ranges, etc
+  // as we can't statically check this with TypeScript.
+  validateTypedData({
+    domain,
+    message,
+    primaryType,
+    types,
+  });
+
+  const parts: Hex[] = ["0x1901"];
+  if (domain)
+    parts.push(
+      hashDomain({
+        domain,
+        types: types as Record<string, MessageTypeProperty[]>,
+      })
+    );
+
+  if (primaryType !== "EIP712Domain")
+    parts.push(
+      hashStruct({
+        data: message,
+        primaryType,
+        types: types as Record<string, MessageTypeProperty[]>,
+      })
+    );
+
+  return concat(parts);
+}
 
 function ikaSignatureToEvmSignature(signature: number[] | Uint8Array) {
   const bytes =
@@ -85,7 +150,7 @@ export const createCrossChainEvmSigner = async (
 
       const validBefore = Number(authorization.validBefore) * 1000;
 
-      const message = fromHex(hashTypedData(typedData), "bytes");
+      const message = fromHex(buildTypedDataPreimage(typedData), "bytes");
 
       const curve = signer.curve as Curve;
       const signatureAlgorithm =
