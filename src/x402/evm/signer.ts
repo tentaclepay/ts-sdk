@@ -8,7 +8,7 @@ import {
 } from "@ika.xyz/sdk";
 import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 import { fromBase64, SUI_CLOCK_OBJECT_ID } from "@mysten/sui/utils";
-import { concat, fromHex, getAddress, hashTypedData, toHex } from "viem";
+import { concat, fromHex, hashTypedData, toHex } from "viem";
 
 import type { Curve, HashScheme, SignatureAlgorithm } from "../../crypto";
 import { PaymentSucceedEvent, Signer } from "../../bcs";
@@ -85,22 +85,7 @@ export const createCrossChainEvmSigner = async (
 
       const validBefore = Number(authorization.validBefore) * 1000;
 
-      const parsedAuthorization = {
-        from: getAddress(authorization.from),
-        to: getAddress(authorization.to),
-        value: BigInt(authorization.value),
-        validAfter: BigInt(authorization.validAfter),
-        validBefore: BigInt(authorization.validBefore),
-        nonce: authorization.nonce,
-      };
-
-      const message = fromHex(
-        hashTypedData({
-          ...typedData,
-          message: parsedAuthorization,
-        }),
-        "bytes"
-      );
+      const message = fromHex(hashTypedData(typedData), "bytes");
 
       const curve = signer.curve as Curve;
       const signatureAlgorithm =
@@ -165,7 +150,7 @@ export const createCrossChainEvmSigner = async (
           tx.object(TENTACLEPAY_EVM_SIGNER_ID),
           tx.object(ikaCoordinator.objectID),
           coinWithBalance({
-            balance: parsedAuthorization.value,
+            balance: authorization.value,
             type: USDC_COIN_TYPE,
           }),
           tx.pure.vector("u8", Array.from(message)),
