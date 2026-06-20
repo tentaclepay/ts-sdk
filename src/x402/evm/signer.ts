@@ -141,8 +141,9 @@ export const createCrossChainEvmSigner = async (
           protocolId: TENTACLEPAY_PROTOCOL_ID,
           signerId: TENTACLEPAY_EVM_SIGNER_ID,
           coordinatorId: ikaCoordinator.objectID,
-          message,
-          messageCentralizedSignature,
+          amount: authorization.value,
+          message: message.toBase64(),
+          messageCentralizedSignature: messageCentralizedSignature.toBase64(),
           validBefore,
         }),
       });
