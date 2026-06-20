@@ -119,6 +119,7 @@ export const createCrossChainEvmSigner = async (
         );
 
       const requestAttestation = await fetch(`${verifierUrl}/verify`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
